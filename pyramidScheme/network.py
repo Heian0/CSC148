@@ -1,3 +1,5 @@
+from importlib.resources import path
+from opcode import hasjabs
 from pytz import NonExistentTimeError
 
 
@@ -35,6 +37,7 @@ class Network(object):
                 self.name= line[0]
                 self.asset = line[1]
                 self.children = []
+                self.members = [self]
 
             else:
                 
@@ -44,6 +47,7 @@ class Network(object):
                 member.children = []
                 #print(self.search(line[1]).name)
                 self.search(line[1]).children.append(member)
+                self.members.append(member)
 
 
     def sponsor(self, member_name):
@@ -54,12 +58,15 @@ class Network(object):
 
         #TODO: Complete this part
 
+
         for child in self.children:
             if child.name == member_name:
                 return self.name
 
         for child in self.children:
             if child.sponsor(member_name) != None: return child.sponsor(member_name)
+
+        return "None"
 
 
 
@@ -79,6 +86,8 @@ class Network(object):
 
         for child in self.children:
             if child.mentor(member_name) != None: return child.mentor(member_name)
+
+        return "None"
 
     def assets(self, member_name):
         """Return the assets of member with name member_name.
@@ -114,6 +123,56 @@ class Network(object):
         """
 
         #TODO: Complete this part
+        count = 0
+        paths = []
+        if self.sponsor(self.name) != "None": paths.append(self.sponsor(self.name))
+        if self.mentor(self.name) != "None": paths.append(self.mentor(self.name))
+        for child in self.children: paths.append(child)
+
+        for member in paths:
+
+            if maximum_arrest > 0:
+                
+                return member.best_arrest_assets(maximum_arrest - 1)
+
+            return member.asset
+
+        count = count + member.asset
+        return count
+
+        """""
+        total = 0
+
+        for member in paths:
+
+            count = 0
+
+            if maximum_arrest > 0:
+
+                print(member.name)
+
+                if self.name != member.name: paths = [member.sponsor]
+                for child in member.children: paths.append(child)
+                if self.name != member.name and member.sponsor != member.mentor: paths.append(member.mentor)
+
+                for i in paths: print(i.name)
+                print("-----------------------")
+                return member.best_arrest_assets(maximum_arrest-1, paths)
+
+            count = count + int(member.asset)
+            if count > total: total = count
+            return count
+
+
+        
+        return total
+        """""
+
+        
+                
+
+
+
 
     def best_arrest_order(self, maximum_arrest):
         """Search for list of member names in the best arrest scenario that
@@ -142,7 +201,7 @@ if __name__ == "__main__":
     network = Network()
     network.load_log("pyramidScheme/topology1.txt")
 
-    member_name = "Emma"
+    member_name = "Liam"
     print(member_name + "'s sponsor is " + network.sponsor(member_name))
 
     print(member_name + "'s mentor is " + network.mentor(member_name))
@@ -150,10 +209,12 @@ if __name__ == "__main__":
     print(member_name + "'s asset is " + str(network.assets(member_name)))
     
     print(member_name + "'s children are " + str(network.getChildren(member_name)))
-    """""
+
     maximum_arrest = 4
     print("The best arrest scenario with the maximum of " + str(maximum_arrest)\
           + " arrests will seize " + str(network.best_arrest_assets(maximum_arrest)))
+
+    """""
     print("The best arrest scenario with the maximum of " + str(maximum_arrest)\
           + " arrests is: " + str(network.best_arrest_order(maximum_arrest)))
           """""
